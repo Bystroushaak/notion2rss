@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
-import time
+import pytz
+import tzlocal
+import datetime
 import configparser
 
 import pyatom
@@ -140,20 +142,19 @@ def convert_to_rss():
     config.read("notion2rss.conf")
     channel_config = config["channel"]
 
+    # bleh
+    local_tz = tzlocal.get_localzone()
+    timezone = datetime.datetime.now(pytz.timezone(str(local_tz))).strftime('%z')
+
     feed = pyatom.AtomFeed(
         title=channel_config["blog_name"],
         feed_url=channel_config["feed_url"],
         url=channel_config["blog_url"],
-        author=channel_config["author"]
+        author=channel_config["author"],
+        timezone=timezone,
     )
 
-    # parsed_data = None
-    # for _ in range(2):
-    #     try:
     parsed_data = list(parse_table_info(config["channel"]["blog_id"]))
-        #     break
-        # except Exception:
-        #     time.sleep(1)
 
     if not parsed_data:
         raise ValueError("Can't parse notion data!")
